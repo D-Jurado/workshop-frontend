@@ -1,1 +1,1 @@
-# workshop-frontend
+# workshop-frontend-chat
