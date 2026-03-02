@@ -1,0 +1,2045 @@
+---
+const appTitle = 'Asistente Bedrock';
+---
+
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{appTitle}</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        --bg: #f4f2ff;
+        --surface: #ffffff;
+        --border: #d7ccf7;
+        --text: #171e2c;
+        --muted: #3f4762;
+        --primary: #8453d2;
+        --primary-contrast: #ffffff;
+        --accent: #7ca8ff;
+        --teal: #00fff0;
+        --deep: #171e2c;
+        --assistant-bg: #eef7ff;
+        --input-bg: #fcfbff;
+        --secondary-bg: #e8f0ff;
+        --secondary-text: #30406c;
+        --log-bg: #171e2c;
+        --log-text: #dcfcff;
+        --backdrop: rgba(23, 30, 44, 0.6);
+        --panel-shadow: rgba(132, 83, 210, 0.14);
+      }
+
+      body[data-theme='dark'] {
+        color-scheme: dark;
+        --bg: #121524;
+        --surface: #1a1f33;
+        --border: #3a4467;
+        --text: #edf0ff;
+        --muted: #c8d1f2;
+        --primary: #9b73f0;
+        --primary-contrast: #0f1220;
+        --accent: #7ca8ff;
+        --teal: #00d8ce;
+        --deep: #0d1020;
+        --assistant-bg: #212843;
+        --input-bg: #1f253d;
+        --secondary-bg: #2b3352;
+        --secondary-text: #d8e3ff;
+        --log-bg: #0d1020;
+        --log-text: #d6fbff;
+        --backdrop: rgba(5, 8, 16, 0.72);
+        --panel-shadow: rgba(0, 0, 0, 0.35);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: radial-gradient(circle at 10% 0%, rgba(124, 168, 255, 0.18), transparent 42%),
+          radial-gradient(circle at 90% 5%, rgba(0, 255, 240, 0.16), transparent 30%),
+          var(--bg);
+        color: var(--text);
+        transition: background 0.2s ease, color 0.2s ease;
+      }
+
+      .layout {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px;
+        display: grid;
+        grid-template-columns: minmax(320px, 1fr) minmax(280px, 360px);
+        gap: 16px;
+        min-height: 100vh;
+      }
+
+      .main-column {
+        display: grid;
+        gap: 22px;
+        min-width: 0;
+      }
+
+      .s3-panel {
+        margin-top: 4px;
+      }
+
+      .site-topbar {
+        max-width: 1200px;
+        margin: 16px auto 0;
+        padding: 18px 78px 14px 18px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        gap: 12px;
+        position: relative;
+      }
+
+      .site-brand {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+
+      .site-logo {
+        width: 150px;
+        height: 150px;
+        object-fit: contain;
+        flex-shrink: 0;
+      }
+
+      .site-title {
+        margin: 0;
+        font-size: 1.25rem;
+        line-height: 1.2;
+        font-weight: 700;
+        color: var(--text);
+      }
+
+      .site-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        justify-content: center;
+      }
+
+      .social-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid transparent;
+        border-radius: 999px;
+        padding: 9px 14px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        color: #ffffff;
+        font: inherit;
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+        text-shadow: 0 1px 1px rgba(0, 0, 0, 0.9), 0 0 4px rgba(0, 0, 0, 0.75), 0 0 8px rgba(0, 0, 0, 0.55);
+        text-decoration: none;
+        box-shadow: 0 10px 26px rgba(132, 83, 210, 0.34);
+        transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+        white-space: nowrap;
+      }
+
+      .social-link:hover {
+        transform: translateY(-1px) scale(1.03);
+        box-shadow: 0 14px 30px rgba(132, 83, 210, 0.42);
+        filter: brightness(1.06);
+      }
+
+      .social-link::before {
+        content: '🔗';
+        margin-right: 8px;
+      }
+
+      .theme-corner {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        z-index: 2;
+        padding: 8px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: var(--surface);
+        box-shadow: 0 4px 14px var(--panel-shadow);
+      }
+
+      .theme-switch {
+        display: inline-flex;
+        align-items: center;
+        cursor: pointer;
+        user-select: none;
+        color: var(--text);
+      }
+
+      .theme-switch input {
+        display: none;
+      }
+
+      .theme-slider {
+        position: relative;
+        width: 46px;
+        height: 24px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: var(--secondary-bg);
+        transition: background 0.2s ease;
+      }
+
+      .theme-slider::after {
+        content: '☀️';
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 18px;
+        height: 18px;
+        border-radius: 999px;
+        background: var(--surface);
+        transition: transform 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+      }
+
+      .theme-switch input:checked + .theme-slider {
+        background: var(--primary);
+      }
+
+      .theme-switch input:checked + .theme-slider::after {
+        content: '🌙';
+        transform: translateX(22px);
+      }
+
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        box-shadow: 0 10px 28px var(--panel-shadow);
+      }
+
+      .chat-panel {
+        display: flex;
+        flex-direction: column;
+        min-height: calc(100vh - 48px);
+      }
+
+      .chat-header {
+        padding: 16px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .chat-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .chat-title {
+        margin: 0;
+        font-size: 1.1rem;
+        color: var(--text);
+        overflow-wrap: anywhere;
+      }
+
+      .chat-main {
+        padding: 14px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .messages {
+        flex: 1;
+        padding: 16px;
+        margin: 8px 14px 0;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background:
+          radial-gradient(circle at 100% 0, rgba(124, 168, 255, 0.1), transparent 38%),
+          radial-gradient(circle at 0 100%, rgba(0, 216, 206, 0.08), transparent 34%),
+          color-mix(in srgb, var(--surface) 88%, var(--secondary-bg));
+      }
+
+      .messages.is-empty {
+        justify-content: center;
+      }
+
+      .empty-chat {
+        display: grid;
+        gap: 10px;
+      }
+
+      .empty-chat-note {
+        margin: 0;
+        text-align: center;
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+
+      .message-row {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+      }
+
+      .message-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        max-width: min(78%, 700px);
+      }
+
+      .message-row.user {
+        justify-content: flex-end;
+      }
+
+      .message-row.assistant {
+        justify-content: flex-start;
+      }
+
+      .message-row.user .message-stack {
+        align-items: flex-end;
+      }
+
+      .message-row.assistant .message-stack {
+        align-items: flex-start;
+      }
+
+      .message-meta {
+        font-size: 0.75rem;
+        color: var(--muted);
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .message-meta::before {
+        display: none;
+        content: none;
+      }
+
+      .message-row.user .message-meta::before {
+        content: none;
+      }
+
+      .message-row.assistant .message-meta::before {
+        content: none;
+      }
+
+      .message {
+        border-radius: 16px;
+        padding: 10px 13px;
+        line-height: 1.4;
+        white-space: pre-wrap;
+        border: 1px solid var(--border);
+        width: fit-content;
+        box-shadow: 0 2px 8px color-mix(in srgb, var(--panel-shadow) 65%, transparent);
+      }
+
+      .message-emoji {
+        flex: 0 0 auto;
+        line-height: 1.2;
+      }
+
+      .message-text {
+        min-width: 0;
+        word-break: break-word;
+      }
+
+      .message.user {
+        background: linear-gradient(135deg, #8453d2 0%, #7ca8ff 100%);
+        color: #ffffff;
+        border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
+        border-bottom-right-radius: 4px;
+      }
+
+      .message.assistant {
+        background: var(--assistant-bg);
+        color: var(--text);
+        border-bottom-left-radius: 4px;
+      }
+
+      .chat-footer {
+        padding: 0;
+        border-top: none;
+        display: contents;
+      }
+
+      .row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      input,
+      textarea,
+      select {
+        width: 100%;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px;
+        font: inherit;
+        color: inherit;
+        background: var(--input-bg);
+      }
+
+      textarea {
+        min-height: 44px;
+        max-height: 120px;
+        resize: vertical;
+      }
+
+      button {
+        border: none;
+        border-radius: 8px;
+        padding: 10px 12px;
+        font: inherit;
+        cursor: pointer;
+        transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease, background-color 0.16s ease,
+          border-color 0.16s ease;
+      }
+
+      button.primary {
+        background: var(--primary);
+        color: var(--primary-contrast);
+        box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 28%, transparent);
+      }
+
+      button.secondary {
+        background: var(--secondary-bg);
+        color: var(--secondary-text);
+        border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+      }
+
+      button.ghost {
+        background: transparent;
+        border: 1px solid var(--border);
+      }
+
+      button:not(:disabled):hover {
+        transform: translateY(-1px);
+      }
+
+      button:not(:disabled):active {
+        transform: translateY(0);
+      }
+
+      button:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 32%, transparent);
+      }
+
+      button.primary:not(:disabled):hover {
+        filter: brightness(1.06);
+        box-shadow: 0 8px 18px color-mix(in srgb, var(--primary) 40%, transparent);
+      }
+
+      button.secondary:not(:disabled):hover {
+        background: color-mix(in srgb, var(--secondary-bg) 74%, var(--surface));
+        border-color: color-mix(in srgb, var(--primary) 36%, var(--border));
+      }
+
+      button.ghost:not(:disabled):hover {
+        background: color-mix(in srgb, var(--surface) 70%, var(--secondary-bg));
+        border-color: color-mix(in srgb, var(--primary) 34%, var(--border));
+      }
+
+      .icon-btn {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.05rem;
+      }
+
+      .section-disabled {
+        opacity: 0.55;
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .side-panel {
+        display: grid;
+        gap: 22px;
+        align-content: start;
+      }
+
+      .sync-panel {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .section {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 12px;
+      }
+
+      .section h2,
+      .section h3 {
+        margin: 0 0 10px 0;
+        font-size: 0.95rem;
+      }
+
+      .hint {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.86rem;
+      }
+
+      .logs {
+        margin-top: 8px;
+        max-height: 300px;
+        overflow: auto;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--log-bg);
+        color: var(--log-text);
+        padding: 8px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 12px;
+      }
+
+      .sync-exec {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        margin-top: 8px;
+        overflow: hidden;
+      }
+
+      .sync-exec-summary {
+        list-style: none;
+        cursor: pointer;
+        user-select: none;
+        padding: 10px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        background: color-mix(in srgb, var(--surface) 92%, var(--secondary-bg));
+      }
+
+      .sync-exec-summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .sync-exec-summary::after {
+        content: '▾';
+        font-size: 0.85rem;
+        color: var(--muted);
+        transition: transform 0.16s ease;
+      }
+
+      .sync-exec[open] .sync-exec-summary::after {
+        transform: rotate(180deg);
+      }
+
+      .sync-exec-main {
+        padding: 10px 12px 12px;
+        border-top: 1px solid var(--border);
+        display: grid;
+        gap: 6px;
+      }
+
+      .sync-exec-meta {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+
+      .sync-exec-title {
+        font-size: 0.86rem;
+        font-weight: 700;
+        color: var(--text);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .sync-exec-status {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        color: var(--muted);
+      }
+
+      .sync-exec-time {
+        font-size: 0.76rem;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+
+      dialog {
+        border: none;
+        border-radius: 12px;
+        width: min(560px, 95vw);
+        padding: 0;
+      }
+
+      dialog::backdrop {
+        background: var(--backdrop);
+      }
+
+      .modal {
+        padding: 16px;
+      }
+
+      .modal h2 {
+        margin-top: 0;
+      }
+
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .estado {
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+
+      .chat-debug {
+        margin-top: 8px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: color-mix(in srgb, var(--surface) 86%, var(--secondary-bg));
+        padding: 8px;
+      }
+
+      .chat-debug-toggle {
+        margin-top: 0;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.82rem;
+        color: var(--muted);
+        user-select: none;
+      }
+
+      .chat-debug-toggle input {
+        width: 14px;
+        height: 14px;
+      }
+
+      .chat-debug pre {
+        margin: 0;
+        max-height: 160px;
+        overflow: auto;
+        font-size: 12px;
+        white-space: pre-wrap;
+        word-break: break-word;
+        color: var(--muted);
+      }
+
+      .required-note {
+        margin: 0 0 10px 0;
+      }
+
+      .s3-docs {
+        margin-top: 10px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 8px;
+        max-height: 250px;
+        overflow: auto;
+        background: color-mix(in srgb, var(--surface) 92%, var(--secondary-bg));
+      }
+
+      .s3-doc-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 44px;
+        padding: 8px 12px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: color-mix(in srgb, var(--surface) 82%, var(--secondary-bg));
+        margin: 0 0 8px;
+        transition: border-color 0.16s ease, background-color 0.16s ease, box-shadow 0.16s ease;
+      }
+
+      .s3-doc-item:hover {
+        border-color: color-mix(in srgb, var(--primary) 36%, var(--border));
+        background: color-mix(in srgb, var(--surface) 72%, var(--secondary-bg));
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 14%, transparent);
+      }
+
+      .s3-doc-item:last-child {
+        margin-bottom: 0;
+      }
+
+      .s3-doc-name {
+        flex: 1 1 auto;
+        min-width: 0;
+        font-size: 0.88rem;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding-right: 8px;
+      }
+
+      .s3-doc-delete {
+        margin-left: auto;
+        flex: 0 0 auto;
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        border: none;
+        background: transparent;
+        color: #ff3b4f !important;
+        padding: 0;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.16s ease, filter 0.16s ease, background 0.16s ease, box-shadow 0.16s ease,
+          border-color 0.16s ease;
+      }
+
+      .s3-doc-delete svg {
+        width: 16px;
+        height: 16px;
+        display: block;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 1.9;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .s3-doc-delete:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.08);
+        background: color-mix(in srgb, #ff3b4f 24%, transparent);
+      }
+
+      .s3-doc-delete:active {
+        transform: translateY(0);
+      }
+
+      .s3-doc-delete:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 3px color-mix(in srgb, #ff3b4f 24%, transparent);
+      }
+
+      .s3-empty {
+        margin: 0;
+        padding: 14px 10px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 0.84rem;
+        border: 1px dashed var(--border);
+        border-radius: 10px;
+      }
+
+      .upload-card {
+        display: grid;
+        gap: 10px;
+      }
+
+      .selected-files-preview {
+        margin: 0;
+        font-size: 0.84rem;
+        color: var(--muted);
+      }
+
+      .selected-files-preview ul {
+        margin: 0;
+        padding-left: 18px;
+        display: grid;
+        gap: 4px;
+      }
+
+      .dropzone {
+        border: 1.5px dashed var(--border);
+        border-radius: 12px;
+        padding: 18px 14px;
+        background: color-mix(in srgb, var(--secondary-bg) 36%, var(--surface));
+        transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+        cursor: pointer;
+      }
+
+      .dropzone:hover {
+        border-color: var(--primary);
+      }
+
+      .dropzone.dragover {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 22%, transparent);
+        transform: translateY(-1px);
+      }
+
+      .dropzone.disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+      }
+
+      .dropzone-title {
+        margin: 0;
+        font-weight: 700;
+        font-size: 0.95rem;
+      }
+
+      .dropzone-subtitle {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 0.84rem;
+      }
+
+      .upload-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .upload-actions .refresh-icon-btn {
+        margin-left: auto;
+      }
+
+      .upload-actions button {
+        border-radius: 10px;
+        padding: 10px 14px;
+      }
+
+      .upload-actions .icon-btn {
+        padding: 0;
+      }
+
+      @media (max-width: 960px) {
+        .site-topbar {
+          margin: 12px 12px 0;
+          padding: 18px 64px 12px 12px;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .site-logo {
+          width: 98px;
+          height: 98px;
+        }
+
+        .site-actions {
+          width: auto;
+          justify-content: center;
+        }
+
+        .social-link {
+          padding: 8px 12px;
+          font-size: 0.8rem;
+        }
+
+        .theme-corner {
+          top: 8px;
+          right: 8px;
+        }
+
+        .layout {
+          grid-template-columns: 1fr;
+          padding: 12px;
+        }
+
+        .chat-panel {
+          min-height: 65vh;
+        }
+
+        .chat-header {
+          align-items: center;
+          flex-direction: row;
+        }
+
+        .chat-header .icon-btn {
+          flex-shrink: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-topbar panel">
+      <div class="site-brand">
+        <img class="site-logo" src="/logo.svg" alt="Logo de la comunidad" />
+        <div>
+          <h1 class="site-title">Creado por AI AWS UG Colombia</h1>
+        </div>
+      </div>
+      <div class="site-actions">
+        <a class="social-link" href="https://linktr.ee/AIAWSUGColombia" target="_blank" rel="noopener noreferrer"
+          >Nuestras redes</a
+        >
+      </div>
+      <div class="theme-corner">
+        <label class="theme-switch" for="toggleTheme">
+          <input type="checkbox" id="toggleTheme" aria-label="Cambiar modo oscuro" role="switch" />
+          <span class="theme-slider" aria-hidden="true"></span>
+        </label>
+      </div>
+    </header>
+
+    <main class="layout">
+      <div class="main-column">
+      <section class="panel chat-panel">
+        <header class="chat-header">
+          <div class="chat-brand">
+            <h1 class="chat-title">{appTitle} · Chat con Agente (Amazon Bedrock)</h1>
+          </div>
+          <button class="ghost icon-btn" id="openChatConfig" aria-label="Configurar chat y credenciales" title="Configurar chat y credenciales">⚙</button>
+        </header>
+
+        <div class="messages" id="messages"></div>
+
+        <div class="chat-main">
+          <section class="section" id="chatSection">
+            <h3>Chat</h3>
+            <p class="hint" id="chatSectionHint">Configura chat y credenciales para habilitar esta sección.</p>
+            <textarea id="messageInput" placeholder="Escribe tu mensaje..."></textarea>
+            <div class="row" style="margin-top:8px;">
+              <button class="primary" id="sendMessage">Enviar</button>
+              <label class="chat-debug-toggle" for="toggleChatDebug">
+                <input type="checkbox" id="toggleChatDebug" />
+                Mostrar diagnóstico técnico
+              </label>
+            </div>
+            <details class="chat-debug">
+              <summary><strong>Diagnóstico de respuesta</strong></summary>
+              <pre id="chatDebugPayload">Sin solicitudes aún.</pre>
+            </details>
+          </section>
+        </div>
+      </section>
+
+      <section class="panel s3-panel">
+        <header class="chat-header">
+          <div class="chat-brand">
+            <h2 class="chat-title">Cargar documentos PDF a S3</h2>
+          </div>
+          <button class="ghost icon-btn" id="openS3Config" aria-label="Configurar S3" title="Configurar S3">⚙</button>
+        </header>
+        <div class="chat-main">
+          <section class="section" id="uploadSection">
+            <div class="upload-card">
+              <input type="file" id="pdfFile" accept="application/pdf" hidden multiple />
+              <div class="dropzone" id="pdfDropzone" role="button" tabindex="0" aria-label="Arrastra y suelta tus documentos PDF o presiona Enter para seleccionar">
+                <p class="dropzone-title">Arrastra y suelta tus documentos PDF aquí</p>
+                <p class="dropzone-subtitle">o haz clic para seleccionarlos desde tu equipo</p>
+              </div>
+            </div>
+            <div class="upload-actions" style="margin-top:8px;">
+              <button class="primary" id="uploadPdf">Cargar</button>
+              <button class="ghost icon-btn refresh-icon-btn" id="refreshS3Docs" aria-label="Actualizar lista" title="Actualizar lista">↻</button>
+            </div>
+            <div class="selected-files-preview" id="selectedFilesPreview">Ningún archivo seleccionado.</div>
+            <p class="hint" id="uploadStatus">Sin archivo cargado.</p>
+            <div class="s3-docs" id="s3Documents"></div>
+          </section>
+        </div>
+      </section>
+      </div>
+
+      <aside class="side-panel">
+        <section class="panel sync-panel">
+          <header class="chat-header">
+            <div class="chat-brand">
+              <h2 class="chat-title">Sincronización de Knowledge Base</h2>
+            </div>
+            <button class="ghost icon-btn" id="openSyncConfig" aria-label="Configurar sincronización" title="Configurar sincronización">⚙</button>
+          </header>
+          <div class="chat-main">
+            <section class="section" id="syncSection">
+              <p class="hint">Ejecuta tareas de sincronización y revisa los logs de cada ejecución.</p>
+              <div class="row" style="margin-top:8px;">
+                <button class="primary" id="startSync">Ejecutar sincronización</button>
+                <button class="ghost icon-btn" id="refreshSyncHistory" aria-label="Actualizar historial AWS" title="Actualizar historial AWS" style="margin-left:auto;">↻</button>
+              </div>
+              <p class="estado" id="syncStatus">Sin ejecuciones.</p>
+              <div id="executions"></div>
+            </section>
+          </div>
+        </section>
+        <section class="panel">
+          <header class="chat-header">
+            <div class="chat-brand">
+              <h2 class="chat-title">Resumen de configuración</h2>
+            </div>
+          </header>
+          <div class="chat-main">
+            <section class="section">
+              <p class="hint" id="summaryAws">AWS: sin configurar.</p>
+              <p class="hint" id="summaryBedrock">Bedrock: sin configurar.</p>
+              <p class="hint" id="summaryS3">S3: sin configurar.</p>
+              <p class="hint" id="summarySync">KB Sync: sin configurar.</p>
+            </section>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <dialog id="chatConfigDialog">
+      <form method="dialog" class="modal" id="chatConfigForm">
+        <h2>Configuración de chat y credenciales</h2>
+        <p class="hint required-note">Los campos marcados como (requerido) son obligatorios.</p>
+        <h3 style="margin:0 0 8px 0;">Credenciales AWS</h3>
+        <label>AWS Access Key ID (requerido)<input name="accessKeyId" required /></label>
+        <label>AWS Secret Access Key (requerido)<input name="secretAccessKey" type="password" required /></label>
+        <label>AWS Session Token (opcional)<input name="sessionToken" /></label>
+        <h3 style="margin:10px 0 8px 0;">Agente Bedrock</h3>
+        <div class="grid-2">
+          <label>Región (requerido)<input name="region" placeholder="us-east-1" required /></label>
+          <label>Agent ID (requerido)<input name="agentId" placeholder="XXXXXXXXXX" required /></label>
+          <label>Agent Alias ID (requerido)<input name="agentAliasId" placeholder="TSTALIASID" required /></label>
+          <label>Session ID (opcional)<input name="sessionId" placeholder="Si se deja vacío, se genera automáticamente" /></label>
+          <div></div>
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <button class="primary" type="submit" value="default">Guardar</button>
+          <button class="ghost" type="button" id="clearChatConfig">Borrar configuraciones</button>
+          <button class="ghost" type="button" id="cancelChatConfig">Cancelar sin guardar</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="s3Dialog">
+      <form method="dialog" class="modal" id="s3Form">
+        <h2>Configuración de S3</h2>
+        <p class="hint required-note">Los campos marcados como (requerido) son obligatorios.</p>
+        <div class="grid-2">
+          <label>Región (requerido)<input name="region" placeholder="us-east-1" required /></label>
+          <label>Bucket (requerido)<input name="bucketName" required /></label>
+          <label>Prefijo<input name="prefix" value="documentos" /></label>
+          <div></div>
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <button class="primary" type="submit" value="default">Guardar</button>
+          <button class="ghost" type="button" id="clearS3Config">Borrar configuración</button>
+          <button class="ghost" type="button" id="cancelS3Config">Cancelar sin guardar</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="syncDialog">
+      <form method="dialog" class="modal" id="syncForm">
+        <h2>Configuración de sincronización KB</h2>
+        <p class="hint required-note">Los campos marcados como (requerido) son obligatorios.</p>
+        <div class="grid-2">
+          <label>Región (requerido)<input name="region" placeholder="us-east-1" required /></label>
+          <label>Knowledge Base ID (requerido)<input name="knowledgeBaseId" required /></label>
+          <label>Data Source ID (requerido)<input name="dataSourceId" required /></label>
+          <label>Descripción<input name="description" value="Sincronización manual desde UI" /></label>
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <button class="primary" type="submit" value="default">Guardar</button>
+          <button class="ghost" type="button" id="clearSyncConfig">Borrar configuración</button>
+          <button class="ghost" type="button" id="cancelSyncConfig">Cancelar sin guardar</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script type="module">
+      const STORAGE_KEY = 'workshop-cloud-chat-config-v1';
+
+      const state = {
+        messages: [],
+        aws: {
+          accessKeyId: '',
+          secretAccessKey: '',
+          sessionToken: ''
+        },
+        bedrock: {
+          region: '',
+          agentId: '',
+          agentAliasId: '',
+          sessionId: ''
+        },
+        s3: {
+          region: '',
+          bucketName: '',
+          prefix: 'documentos'
+        },
+        sync: {
+          region: '',
+          knowledgeBaseId: '',
+          dataSourceId: '',
+          description: 'Sincronización manual desde UI'
+        },
+        ui: {
+          theme: 'dark',
+          chatDebug: false
+        },
+        selectedPdfFiles: [],
+        s3Documents: [],
+        executions: []
+      };
+
+      const el = {
+        messages: document.querySelector('#messages'),
+        chatSection: document.querySelector('#chatSection'),
+        chatSectionHint: document.querySelector('#chatSectionHint'),
+        uploadSection: document.querySelector('#uploadSection'),
+        messageInput: document.querySelector('#messageInput'),
+        sendMessage: document.querySelector('#sendMessage'),
+        chatStatus: document.querySelector('#chatStatus'),
+        toggleChatDebug: document.querySelector('#toggleChatDebug'),
+        chatDebugPanel: document.querySelector('.chat-debug'),
+        chatDebugPayload: document.querySelector('#chatDebugPayload'),
+        uploadPdf: document.querySelector('#uploadPdf'),
+        pdfFile: document.querySelector('#pdfFile'),
+        pdfDropzone: document.querySelector('#pdfDropzone'),
+        selectedFilesPreview: document.querySelector('#selectedFilesPreview'),
+        uploadStatus: document.querySelector('#uploadStatus'),
+        s3Documents: document.querySelector('#s3Documents'),
+        refreshS3Docs: document.querySelector('#refreshS3Docs'),
+        summaryAws: document.querySelector('#summaryAws'),
+        summaryBedrock: document.querySelector('#summaryBedrock'),
+        summaryS3: document.querySelector('#summaryS3'),
+        summarySync: document.querySelector('#summarySync'),
+        toggleTheme: document.querySelector('#toggleTheme'),
+        openChatConfig: document.querySelector('#openChatConfig'),
+        openS3Config: document.querySelector('#openS3Config'),
+        openSyncConfig: document.querySelector('#openSyncConfig'),
+        startSync: document.querySelector('#startSync'),
+        refreshSyncHistory: document.querySelector('#refreshSyncHistory'),
+        syncStatus: document.querySelector('#syncStatus'),
+        executions: document.querySelector('#executions'),
+        chatConfigDialog: document.querySelector('#chatConfigDialog'),
+        s3Dialog: document.querySelector('#s3Dialog'),
+        syncDialog: document.querySelector('#syncDialog'),
+        chatConfigForm: document.querySelector('#chatConfigForm'),
+        s3Form: document.querySelector('#s3Form'),
+        syncForm: document.querySelector('#syncForm'),
+        clearChatConfig: document.querySelector('#clearChatConfig'),
+        cancelChatConfig: document.querySelector('#cancelChatConfig'),
+        cancelS3Config: document.querySelector('#cancelS3Config'),
+        cancelSyncConfig: document.querySelector('#cancelSyncConfig'),
+        clearS3Config: document.querySelector('#clearS3Config'),
+        clearSyncConfig: document.querySelector('#clearSyncConfig')
+      };
+
+      const clone = (value) => JSON.parse(JSON.stringify(value));
+
+      const saveConfig = () => {
+        const persisted = {
+          aws: state.aws,
+          bedrock: state.bedrock,
+          s3: state.s3,
+          sync: state.sync,
+          ui: state.ui,
+          executions: state.executions
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(persisted));
+      };
+
+      const loadConfig = () => {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return;
+          const parsed = JSON.parse(raw);
+          state.aws = { ...state.aws, ...(parsed.aws || {}) };
+          state.bedrock = { ...state.bedrock, ...(parsed.bedrock || {}) };
+          state.s3 = { ...state.s3, ...(parsed.s3 || {}) };
+          state.sync = { ...state.sync, ...(parsed.sync || {}) };
+          state.ui = { ...state.ui, ...(parsed.ui || {}) };
+          state.executions = Array.isArray(parsed.executions) ? parsed.executions : [];
+        } catch {
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      };
+
+      const escapeHtml = (value) =>
+        String(value ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+
+      const formatDateTime = (value) => {
+        if (!value) return 'Sin fecha';
+        const parsed = new Date(value);
+        if (Number.isNaN(parsed.getTime())) return 'Sin fecha';
+        return parsed.toLocaleString('es-ES');
+      };
+
+      const mergeExecutions = (incomingExecutions) => {
+        const map = new Map();
+
+        state.executions.forEach((exec) => {
+          if (!exec?.id) return;
+          map.set(exec.id, exec);
+        });
+
+        (incomingExecutions || []).forEach((exec) => {
+          if (!exec?.id) return;
+          const previous = map.get(exec.id) || {};
+          map.set(exec.id, {
+            ...previous,
+            ...exec,
+            logs: Array.isArray(exec.logs) && exec.logs.length > 0 ? exec.logs : previous.logs || []
+          });
+        });
+
+        state.executions = Array.from(map.values());
+      };
+
+      const applyTheme = () => {
+        const theme = state.ui.theme === 'dark' ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', theme);
+        el.toggleTheme.checked = theme === 'dark';
+      };
+
+      const applyDebugVisibility = () => {
+        const debugEnabled = Boolean(state.ui.chatDebug);
+        el.toggleChatDebug.checked = debugEnabled;
+        el.chatDebugPanel.hidden = !debugEnabled;
+      };
+
+      const formatBytes = (bytes) => {
+        if (!bytes) return '0 B';
+        const units = ['B', 'KB', 'MB', 'GB'];
+        let value = bytes;
+        let idx = 0;
+        while (value >= 1024 && idx < units.length - 1) {
+          value /= 1024;
+          idx += 1;
+        }
+        return `${value.toFixed(value >= 10 || idx === 0 ? 0 : 1)} ${units[idx]}`;
+      };
+
+      const renderMessages = () => {
+        el.messages.innerHTML = '';
+
+        if (state.messages.length === 0) {
+          el.messages.classList.add('is-empty');
+
+          const wrapper = document.createElement('div');
+          wrapper.className = 'empty-chat';
+
+          const note = document.createElement('p');
+          note.className = 'empty-chat-note';
+          note.textContent = 'Aún no hay mensajes. Escribe tu primera consulta para iniciar el chat.';
+
+          wrapper.appendChild(note);
+          el.messages.appendChild(wrapper);
+          return;
+        }
+
+        el.messages.classList.remove('is-empty');
+
+        state.messages.forEach((msg) => {
+          const isUser = msg.role === 'user';
+          const roleClass = isUser ? 'user' : 'assistant';
+
+          const row = document.createElement('div');
+          row.className = `message-row ${roleClass}`;
+          row.style.display = 'flex';
+          row.style.width = '100%';
+          row.style.justifyContent = isUser ? 'flex-end' : 'flex-start';
+
+          const stack = document.createElement('div');
+          stack.className = 'message-stack';
+          stack.style.display = 'flex';
+          stack.style.flexDirection = 'column';
+          stack.style.gap = '4px';
+          stack.style.maxWidth = 'min(78%, 700px)';
+          stack.style.alignItems = isUser ? 'flex-end' : 'flex-start';
+
+          const meta = document.createElement('div');
+          meta.className = 'message-meta';
+          meta.textContent = isUser ? 'Tú' : 'Agente';
+
+          const bubble = document.createElement('div');
+          bubble.className = `message ${roleClass}`;
+          bubble.style.display = 'inline-flex';
+          bubble.style.alignItems = 'flex-start';
+          bubble.style.gap = '8px';
+          bubble.style.borderRadius = '16px';
+          bubble.style.padding = '10px 13px';
+          bubble.style.lineHeight = '1.4';
+          bubble.style.whiteSpace = 'pre-wrap';
+          bubble.style.border = '1px solid var(--border)';
+          bubble.style.width = 'fit-content';
+          bubble.style.boxShadow = '0 2px 8px color-mix(in srgb, var(--panel-shadow) 65%, transparent)';
+
+          if (isUser) {
+            bubble.style.background = 'linear-gradient(135deg, #8453d2 0%, #7ca8ff 100%)';
+            bubble.style.color = '#ffffff';
+            bubble.style.borderColor = 'color-mix(in srgb, var(--primary) 45%, var(--border))';
+            bubble.style.borderBottomRightRadius = '4px';
+          } else {
+            bubble.style.background = 'var(--assistant-bg)';
+            bubble.style.color = 'var(--text)';
+            bubble.style.borderBottomLeftRadius = '4px';
+          }
+
+          const emoji = document.createElement('span');
+          emoji.className = 'message-emoji';
+          emoji.textContent = isUser ? '👤' : '🤖';
+
+          const text = document.createElement('span');
+          text.className = 'message-text';
+          text.textContent = msg.content;
+
+          bubble.appendChild(emoji);
+          bubble.appendChild(text);
+
+          stack.appendChild(meta);
+          stack.appendChild(bubble);
+          row.appendChild(stack);
+          el.messages.appendChild(row);
+        });
+
+        el.messages.scrollTop = el.messages.scrollHeight;
+      };
+
+      const renderSummaries = () => {
+        el.summaryAws.textContent = state.aws.accessKeyId ? `AWS: credenciales configuradas (${state.aws.accessKeyId})` : 'AWS: sin configurar.';
+
+        el.summaryBedrock.textContent = state.bedrock.agentId && state.bedrock.agentAliasId
+          ? `Agente: ${state.bedrock.region} · ${state.bedrock.agentId} · Alias ${state.bedrock.agentAliasId}`
+          : 'Agente Bedrock: sin configurar.';
+
+        el.summaryS3.textContent = state.s3.bucketName
+          ? `S3: ${state.s3.region} · ${state.s3.bucketName}/${state.s3.prefix}`
+          : 'S3: sin configurar.';
+
+        el.summarySync.textContent = state.sync.knowledgeBaseId
+          ? `KB Sync: ${state.sync.region} · KB ${state.sync.knowledgeBaseId} · DS ${state.sync.dataSourceId}`
+          : 'KB Sync: sin configurar.';
+
+        updateSectionAvailability();
+      };
+
+      const renderS3Documents = () => {
+        el.s3Documents.innerHTML = '';
+
+        if (state.s3Documents.length === 0) {
+          const empty = document.createElement('p');
+          empty.className = 's3-empty';
+          empty.textContent = 'No hay documentos listados en S3.';
+          el.s3Documents.appendChild(empty);
+          return;
+        }
+
+        state.s3Documents.forEach((doc) => {
+          const row = document.createElement('div');
+          row.className = 's3-doc-item';
+          row.style.display = 'flex';
+          row.style.alignItems = 'center';
+          row.style.gap = '10px';
+          row.style.transition = 'border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease';
+
+          const name = document.createElement('div');
+          name.className = 's3-doc-name';
+          name.textContent = doc.key.split('/').pop() || doc.key;
+          name.style.flex = '1 1 auto';
+          name.style.minWidth = '0';
+          name.style.whiteSpace = 'nowrap';
+          name.style.overflow = 'hidden';
+          name.style.textOverflow = 'ellipsis';
+
+          const removeButton = document.createElement('button');
+          removeButton.className = 's3-doc-delete';
+          removeButton.type = 'button';
+          removeButton.style.marginLeft = 'auto';
+          removeButton.style.color = '#ff3b4f';
+          removeButton.style.background = 'transparent';
+          removeButton.style.border = 'none';
+          removeButton.style.borderRadius = '999px';
+          removeButton.style.display = 'inline-flex';
+          removeButton.style.alignItems = 'center';
+          removeButton.style.justifyContent = 'center';
+          removeButton.style.width = '34px';
+          removeButton.style.height = '34px';
+          removeButton.style.cursor = 'pointer';
+          removeButton.style.pointerEvents = 'auto';
+          removeButton.style.position = 'relative';
+          removeButton.style.zIndex = '1';
+          removeButton.style.transition = 'background 0.16s ease, color 0.16s ease, transform 0.16s ease';
+          removeButton.innerHTML = `
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" stroke="#ff3b4f" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 6h18" />
+              <path d="M8 6V4h8v2" />
+              <path d="M6 6l1 14h10l1-14" />
+              <path d="M10 11v6" />
+              <path d="M14 11v6" />
+            </svg>
+          `;
+          removeButton.ariaLabel = `Eliminar ${name.textContent}`;
+          removeButton.title = `Eliminar ${name.textContent}`;
+
+          const setHoverState = (active) => {
+            if (active) {
+              row.style.borderColor = 'rgba(99, 102, 241, 0.35)';
+              row.style.background = 'rgba(99, 102, 241, 0.1)';
+              row.style.boxShadow = '0 8px 20px rgba(13, 18, 38, 0.4)';
+            } else {
+              row.style.borderColor = '';
+              row.style.background = '';
+              row.style.boxShadow = '';
+            }
+          };
+
+          row.addEventListener('mouseenter', () => setHoverState(true));
+          row.addEventListener('mouseleave', () => setHoverState(false));
+          row.addEventListener('focusin', () => setHoverState(true));
+          row.addEventListener('focusout', () => setHoverState(false));
+
+          removeButton.addEventListener('click', () => void deleteS3Document(doc.key));
+
+          row.appendChild(name);
+          row.appendChild(removeButton);
+          el.s3Documents.appendChild(row);
+        });
+      };
+
+      const renderExecutions = () => {
+        el.executions.innerHTML = '';
+        const ordered = clone(state.executions).sort((a, b) => {
+          const aTime = new Date(a.startedAt || 0).getTime();
+          const bTime = new Date(b.startedAt || 0).getTime();
+          return aTime - bTime;
+        });
+
+        if (ordered.length === 0) {
+          const empty = document.createElement('p');
+          empty.className = 'hint';
+          empty.textContent = 'No hay ejecuciones previas registradas.';
+          el.executions.appendChild(empty);
+          return;
+        }
+
+        ordered.forEach((exec) => {
+          const wrapper = document.createElement('details');
+          wrapper.className = 'sync-exec';
+          const isRunning = exec.status === 'PENDIENTE' || exec.status === 'EN_EJECUCION';
+          wrapper.open = isRunning;
+
+          const startedAt = formatDateTime(exec.startedAt);
+          const finishedAt = exec.finishedAt ? formatDateTime(exec.finishedAt) : 'En progreso';
+          const titleId = exec.jobId || exec.id || 'sin-id';
+          const sourceLabel = exec.source ? `${exec.source} · ` : '';
+
+          wrapper.innerHTML = `
+            <summary class="sync-exec-summary">
+              <span class="sync-exec-meta">
+                <span class="sync-exec-title">${escapeHtml(sourceLabel)}Job ${escapeHtml(titleId)}</span>
+                <span class="sync-exec-status">${escapeHtml(exec.status || 'DESCONOCIDO')}</span>
+              </span>
+              <span class="sync-exec-time">${escapeHtml(startedAt)}</span>
+            </summary>
+            <div class="sync-exec-main">
+              <div><strong>Iniciado:</strong> ${escapeHtml(startedAt)}</div>
+              <div><strong>Finalizado:</strong> ${escapeHtml(finishedAt)}</div>
+              <div class="logs">${(exec.logs || []).map((item) => escapeHtml(item)).join('\n')}</div>
+            </div>
+          `;
+          el.executions.appendChild(wrapper);
+        });
+      };
+
+      const fetchSyncHistoryFromAws = async () => {
+        if (!isSyncConfigured()) return;
+
+        if (el.refreshSyncHistory) {
+          el.refreshSyncHistory.disabled = true;
+        }
+
+        setStatus(el.syncStatus, 'Actualizando historial desde AWS...');
+
+        try {
+          const response = await fetch('/api/sync-history', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              ...state.sync,
+              ...state.aws,
+              maxResults: 40
+            })
+          });
+
+          const payload = await response.json();
+
+          if (!response.ok) {
+            throw new Error(payload.error || 'No se pudo cargar historial de sincronización desde AWS.');
+          }
+
+          mergeExecutions(payload.executions || []);
+          renderExecutions();
+          saveConfig();
+          setStatus(el.syncStatus, `Historial actualizado desde AWS (${(payload.executions || []).length} job(s)).`);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Error consultando historial de sincronización en AWS';
+          setStatus(el.syncStatus, message);
+        } finally {
+          if (el.refreshSyncHistory) {
+            el.refreshSyncHistory.disabled = !isSyncConfigured();
+          }
+        }
+      };
+
+      const fillForm = (form, values) => {
+        Object.entries(values).forEach(([key, value]) => {
+          const field = form.elements.namedItem(key);
+          if (field) field.value = String(value ?? '');
+        });
+      };
+
+      const readForm = (form) => {
+        const data = new FormData(form);
+        return Object.fromEntries(data.entries());
+      };
+
+      const isAwsConfigured = () => Boolean(state.aws.accessKeyId && state.aws.secretAccessKey);
+
+      const isBedrockConfigured = () =>
+        Boolean(state.bedrock.region && state.bedrock.agentId && state.bedrock.agentAliasId && isAwsConfigured());
+
+      const isS3Configured = () => Boolean(state.s3.region && state.s3.bucketName && isAwsConfigured());
+
+      const isSyncConfigured = () =>
+        Boolean(state.sync.region && state.sync.knowledgeBaseId && state.sync.dataSourceId && isAwsConfigured());
+
+      const updateUploadButtonState = () => {
+        const uploadReady = isS3Configured();
+        const hasFilesSelected = state.selectedPdfFiles.length > 0;
+        el.uploadPdf.disabled = !(uploadReady && hasFilesSelected);
+      };
+
+      const updateSectionAvailability = () => {
+        const chatReady = isBedrockConfigured();
+        const uploadReady = isS3Configured();
+        const syncReady = isSyncConfigured();
+
+        el.chatSection.classList.toggle('section-disabled', !chatReady);
+        el.uploadSection.classList.toggle('section-disabled', !uploadReady);
+
+        el.messageInput.disabled = !chatReady;
+        el.sendMessage.disabled = !chatReady;
+        el.chatSectionHint.textContent = chatReady
+          ? 'La sección de chat está habilitada.'
+          : 'Configura chat y credenciales para habilitar esta sección.';
+
+        updateUploadButtonState();
+        el.refreshS3Docs.disabled = !uploadReady;
+        el.pdfDropzone.classList.remove('disabled');
+
+        el.startSync.disabled = !syncReady;
+        el.refreshSyncHistory.disabled = !syncReady;
+      };
+
+      const clearChatConfig = () => {
+        state.aws = {
+          accessKeyId: '',
+          secretAccessKey: '',
+          sessionToken: ''
+        };
+        state.bedrock = {
+          region: '',
+          agentId: '',
+          agentAliasId: '',
+          sessionId: ''
+        };
+      };
+
+      const clearS3Config = () => {
+        state.s3 = {
+          region: '',
+          bucketName: '',
+          prefix: 'documentos'
+        };
+      };
+
+      const clearSyncConfig = () => {
+        state.sync = {
+          region: '',
+          knowledgeBaseId: '',
+          dataSourceId: '',
+          description: 'Sincronización manual desde UI'
+        };
+      };
+
+      const setStatus = (target, message) => {
+        if (!target) return;
+        target.textContent = message;
+      };
+
+      const assignSelectedFiles = (files) => {
+        const fileList = Array.isArray(files) ? files : [];
+
+        if (fileList.length === 0) {
+          state.selectedPdfFiles = [];
+          el.pdfFile.value = '';
+          el.selectedFilesPreview.textContent = 'Ningún archivo seleccionado.';
+          updateUploadButtonState();
+          return;
+        }
+
+        const pdfFiles = fileList.filter((file) =>
+          file && (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'))
+        );
+
+        if (pdfFiles.length === 0) {
+          state.selectedPdfFiles = [];
+          setStatus(el.uploadStatus, 'Solo se permiten archivos PDF.');
+          el.selectedFilesPreview.textContent = 'Ningún archivo seleccionado.';
+          updateUploadButtonState();
+          return;
+        }
+
+        state.selectedPdfFiles = pdfFiles;
+        el.selectedFilesPreview.innerHTML = `<ul>${pdfFiles
+          .map((file) => `<li>${file.name} (${formatBytes(file.size || 0)})</li>`)
+          .join('')}</ul>`;
+        updateUploadButtonState();
+      };
+
+      const listS3Documents = async () => {
+        if (!isS3Configured()) {
+          state.s3Documents = [];
+          renderS3Documents();
+          return;
+        }
+
+        try {
+          const params = new URLSearchParams({
+            ...state.s3,
+            ...state.aws
+          });
+
+          const response = await fetch(`/api/upload-pdf?${params.toString()}`);
+          const payload = await response.json();
+
+          if (!response.ok) {
+            throw new Error(payload.error || 'No se pudo listar documentos en S3.');
+          }
+
+          state.s3Documents = payload.documents || [];
+          renderS3Documents();
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Error listando documentos';
+          setStatus(el.uploadStatus, message);
+        }
+      };
+
+      const deleteS3Document = async (key) => {
+        if (!isS3Configured()) {
+          setStatus(el.uploadStatus, 'Configura S3 y AWS para eliminar documentos.');
+          return;
+        }
+
+        const confirmed = confirm(`¿Eliminar el documento ${key}?`);
+        if (!confirmed) return;
+
+        try {
+          const response = await fetch('/api/upload-pdf', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              ...state.s3,
+              ...state.aws,
+              key
+            })
+          });
+
+          const payload = await response.json();
+          if (!response.ok) {
+            throw new Error(payload.error || 'No se pudo eliminar el documento.');
+          }
+
+          setStatus(el.uploadStatus, `Documento eliminado: ${key}`);
+          state.s3Documents = state.s3Documents.filter((doc) => doc.key !== key);
+          renderS3Documents();
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Error eliminando documento';
+          setStatus(el.uploadStatus, message);
+        }
+      };
+
+      const sendChat = async () => {
+        const content = el.messageInput.value.trim();
+        if (!content) return;
+
+        if (!isBedrockConfigured()) {
+          setStatus(el.chatStatus, 'Configura AWS y el agente Bedrock antes de enviar mensajes.');
+          return;
+        }
+
+        state.messages.push({ role: 'user', content });
+        el.messageInput.value = '';
+        renderMessages();
+        setStatus(el.chatStatus, 'Consultando agente...');
+        el.sendMessage.disabled = true;
+
+        try {
+          const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              ...state.bedrock,
+              ...state.aws,
+              messages: state.messages
+            })
+          });
+
+          const rawPayload = await response.text();
+          let payload = {};
+          try {
+            payload = JSON.parse(rawPayload || '{}');
+          } catch {
+            payload = { raw: rawPayload };
+          }
+
+          el.chatDebugPayload.textContent = typeof payload === 'object' ? JSON.stringify(payload, null, 2) : String(payload);
+
+          if (!response.ok) {
+            throw new Error(payload.error || 'Error al consultar Bedrock.');
+          }
+
+          const agentReply = typeof payload.reply === 'string' ? payload.reply.trim() : '';
+          state.messages.push({ role: 'assistant', content: agentReply || 'Sin respuesta del agente.' });
+          state.bedrock.sessionId = payload.sessionId || state.bedrock.sessionId;
+          saveConfig();
+          setStatus(el.chatStatus, 'Respuesta recibida.');
+          renderMessages();
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Error desconocido en chat';
+          setStatus(el.chatStatus, message);
+          state.messages.push({ role: 'assistant', content: `Se produjo un error: ${message}` });
+          renderMessages();
+        } finally {
+          el.sendMessage.disabled = false;
+        }
+      };
+
+      const uploadPdf = async () => {
+        if (!isS3Configured()) {
+          setStatus(el.uploadStatus, 'Configura S3 y credenciales AWS antes de subir documentos.');
+          return;
+        }
+
+        const files = state.selectedPdfFiles.length > 0
+          ? state.selectedPdfFiles
+          : Array.from(el.pdfFile.files || []);
+
+        if (files.length === 0) {
+          setStatus(el.uploadStatus, 'Selecciona un PDF para continuar.');
+          return;
+        }
+
+        setStatus(el.uploadStatus, `Subiendo ${files.length} documento(s)...`);
+        el.uploadPdf.disabled = true;
+
+        try {
+          for (const file of files) {
+            const formData = new FormData();
+            formData.append('file', file);
+            Object.entries({ ...state.s3, ...state.aws }).forEach(([key, value]) => {
+              formData.append(key, String(value || ''));
+            });
+
+            const response = await fetch('/api/upload-pdf', {
+              method: 'POST',
+              body: formData
+            });
+
+            const payload = await response.json();
+
+            if (!response.ok) {
+              throw new Error(payload.error || `No se pudo cargar el PDF: ${file.name}`);
+            }
+          }
+
+          setStatus(el.uploadStatus, `${files.length} documento(s) cargado(s) correctamente.`);
+          assignSelectedFiles([]);
+          await listS3Documents();
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Error desconocido en carga';
+          setStatus(el.uploadStatus, message);
+        } finally {
+          updateUploadButtonState();
+        }
+      };
+
+      const pollSyncExecution = async (executionId) => {
+        const maxAttempts = 150;
+        let attempts = 0;
+
+        while (attempts < maxAttempts) {
+          attempts += 1;
+
+          try {
+            const response = await fetch(`/api/sync?executionId=${encodeURIComponent(executionId)}`);
+            const payload = await response.json();
+            if (!response.ok) {
+              throw new Error(payload.error || 'No se pudo obtener estado de la sincronización.');
+            }
+
+            const index = state.executions.findIndex((item) => item.id === executionId);
+            if (index >= 0) {
+              state.executions[index] = payload;
+            } else {
+              state.executions.push(payload);
+            }
+
+            renderExecutions();
+            saveConfig();
+            setStatus(el.syncStatus, `Última ejecución ${executionId}: ${payload.status}`);
+
+            if (payload.status === 'COMPLETADO' || payload.status === 'FALLIDO') {
+              void fetchSyncHistoryFromAws();
+              return;
+            }
+          } catch (error) {
+            const message = error instanceof Error ? error.message : 'Error consultando logs';
+            setStatus(el.syncStatus, message);
+            return;
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, 4000));
+        }
+
+        setStatus(el.syncStatus, `La ejecución ${executionId} sigue en curso. Puedes consultar luego.`);
+      };
+
+      const startSync = async () => {
+        if (!isSyncConfigured()) {
+          setStatus(el.syncStatus, 'Configura sincronización y credenciales AWS antes de ejecutarla.');
+          return;
+        }
+
+        el.startSync.disabled = true;
+        setStatus(el.syncStatus, 'Iniciando sincronización...');
+
+        try {
+          const response = await fetch('/api/sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              ...state.sync,
+              ...state.aws
+            })
+          });
+
+          const payload = await response.json();
+
+          if (!response.ok) {
+            throw new Error(payload.error || 'No se pudo iniciar la sincronización.');
+          }
+
+          const executionId = payload.executionId;
+          setStatus(el.syncStatus, `Ejecución iniciada: ${executionId}`);
+          state.executions.push({
+            id: executionId,
+            status: 'PENDIENTE',
+            logs: [`[${new Date().toLocaleString('es-ES')}] Inicializando...`],
+            startedAt: new Date().toISOString()
+          });
+          renderExecutions();
+          saveConfig();
+          void pollSyncExecution(executionId);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Error iniciando sincronización';
+          setStatus(el.syncStatus, message);
+        } finally {
+          el.startSync.disabled = false;
+        }
+      };
+
+      const initModalHandlers = () => {
+        fillForm(el.chatConfigForm, {
+          ...state.aws,
+          ...state.bedrock
+        });
+        fillForm(el.s3Form, state.s3);
+        fillForm(el.syncForm, state.sync);
+
+        el.openChatConfig.addEventListener('click', () => {
+          fillForm(el.chatConfigForm, {
+            ...state.aws,
+            ...state.bedrock
+          });
+          el.chatConfigDialog.showModal();
+        });
+
+        el.openS3Config.addEventListener('click', () => {
+          fillForm(el.s3Form, state.s3);
+          el.s3Dialog.showModal();
+        });
+
+        el.openSyncConfig.addEventListener('click', () => {
+          fillForm(el.syncForm, state.sync);
+          el.syncDialog.showModal();
+        });
+
+        el.cancelChatConfig.addEventListener('click', () => {
+          el.chatConfigDialog.close();
+        });
+
+        el.cancelS3Config.addEventListener('click', () => {
+          el.s3Dialog.close();
+        });
+
+        el.cancelSyncConfig.addEventListener('click', () => {
+          el.syncDialog.close();
+        });
+
+        el.clearChatConfig.addEventListener('click', () => {
+          clearChatConfig();
+          saveConfig();
+          renderSummaries();
+          el.chatConfigDialog.close();
+        });
+
+        el.clearS3Config.addEventListener('click', () => {
+          clearS3Config();
+          saveConfig();
+          renderSummaries();
+          assignSelectedFiles([]);
+          state.s3Documents = [];
+          renderS3Documents();
+          el.s3Dialog.close();
+        });
+
+        el.clearSyncConfig.addEventListener('click', () => {
+          clearSyncConfig();
+          saveConfig();
+          renderSummaries();
+          el.syncDialog.close();
+        });
+
+        el.chatConfigForm.addEventListener('submit', (event) => {
+          event.preventDefault();
+          const data = readForm(el.chatConfigForm);
+          state.aws = {
+            accessKeyId: data.accessKeyId || '',
+            secretAccessKey: data.secretAccessKey || '',
+            sessionToken: data.sessionToken || ''
+          };
+          state.bedrock = {
+            region: data.region || '',
+            agentId: data.agentId || '',
+            agentAliasId: data.agentAliasId || '',
+            sessionId: data.sessionId || state.bedrock.sessionId || crypto.randomUUID()
+          };
+          saveConfig();
+          renderSummaries();
+          el.chatConfigDialog.close();
+          void listS3Documents();
+        });
+
+        el.s3Form.addEventListener('submit', (event) => {
+          event.preventDefault();
+          const data = readForm(el.s3Form);
+          state.s3 = {
+            region: data.region || '',
+            bucketName: data.bucketName || '',
+            prefix: data.prefix || 'documentos'
+          };
+          saveConfig();
+          renderSummaries();
+          el.s3Dialog.close();
+          void listS3Documents();
+        });
+
+        el.syncForm.addEventListener('submit', (event) => {
+          event.preventDefault();
+          const data = readForm(el.syncForm);
+          state.sync = {
+            region: data.region || '',
+            knowledgeBaseId: data.knowledgeBaseId || '',
+            dataSourceId: data.dataSourceId || '',
+            description: data.description || ''
+          };
+          saveConfig();
+          renderSummaries();
+          el.syncDialog.close();
+          void fetchSyncHistoryFromAws();
+        });
+      };
+
+      el.sendMessage.addEventListener('click', () => void sendChat());
+      el.messageInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+          event.preventDefault();
+          void sendChat();
+        }
+      });
+
+      el.uploadPdf.addEventListener('click', () => void uploadPdf());
+      el.pdfDropzone.addEventListener('click', () => {
+        el.pdfFile.click();
+      });
+      el.pdfDropzone.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          el.pdfFile.click();
+        }
+      });
+      el.pdfDropzone.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        el.pdfDropzone.classList.add('dragover');
+      });
+      el.pdfDropzone.addEventListener('dragleave', () => {
+        el.pdfDropzone.classList.remove('dragover');
+      });
+      el.pdfDropzone.addEventListener('drop', (event) => {
+        event.preventDefault();
+        el.pdfDropzone.classList.remove('dragover');
+        const files = Array.from(event.dataTransfer?.files || []);
+        assignSelectedFiles(files);
+      });
+      el.pdfFile.addEventListener('change', () => {
+        const files = Array.from(el.pdfFile.files || []);
+        assignSelectedFiles(files);
+      });
+      el.startSync.addEventListener('click', () => void startSync());
+      el.refreshS3Docs.addEventListener('click', () => void listS3Documents());
+      el.refreshSyncHistory.addEventListener('click', () => void fetchSyncHistoryFromAws());
+      el.toggleTheme.addEventListener('change', (event) => {
+        state.ui.theme = event.target.checked ? 'dark' : 'light';
+        applyTheme();
+        saveConfig();
+      });
+      el.toggleChatDebug.addEventListener('change', (event) => {
+        state.ui.chatDebug = event.target.checked;
+        applyDebugVisibility();
+        saveConfig();
+      });
+
+      loadConfig();
+      applyTheme();
+      applyDebugVisibility();
+      initModalHandlers();
+      renderMessages();
+      renderSummaries();
+      renderS3Documents();
+      renderExecutions();
+      void listS3Documents();
+      void fetchSyncHistoryFromAws();
+    </script>
+  </body>
+</html>
