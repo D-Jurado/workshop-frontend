@@ -971,7 +971,7 @@ const appTitle = 'Asistente Bedrock';
           </header>
           <div class="chat-main">
             <section class="section" id="syncSection">
-              <p class="hint">Ejecuta tareas de sincronización y revisa los logs de cada ejecución</p>
+              <p class="hint">Ejecuta tareas de sincronización y revisa los logs de cada ejecución.</p>
               <div class="row" style="margin-top:8px;">
                 <button class="primary" id="startSync">Ejecutar sincronización</button>
                 <button class="ghost icon-btn" id="refreshSyncHistory" aria-label="Actualizar historial AWS" title="Actualizar historial AWS" style="margin-left:auto;">↻</button>
@@ -1167,6 +1167,13 @@ const appTitle = 'Asistente Bedrock';
         } catch {
           localStorage.removeItem(STORAGE_KEY);
         }
+      };
+
+      const rotateChatSessionOnPageLoad = () => {
+        const hasBedrockConfig = Boolean(state.bedrock.region && state.bedrock.agentId && state.bedrock.agentAliasId);
+        if (!hasBedrockConfig) return;
+        state.bedrock.sessionId = crypto.randomUUID();
+        saveConfig();
       };
 
       const escapeHtml = (value) =>
@@ -2031,6 +2038,7 @@ const appTitle = 'Asistente Bedrock';
       });
 
       loadConfig();
+      rotateChatSessionOnPageLoad();
       applyTheme();
       applyDebugVisibility();
       initModalHandlers();
@@ -2043,4 +2051,3 @@ const appTitle = 'Asistente Bedrock';
     </script>
   </body>
 </html>
-
